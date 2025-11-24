@@ -1,0 +1,7 @@
+https://github.com/wnlen/clash-for-linux
+
+```
+export HTTP_PROXY="http://91d791dc330b49442c3ab565313120585b1284f3f3c8828e51f8cfde2492eb12@115.29.205.107:7890"
+export HTTPS_PROXY="http://91d791dc330b49442c3ab565313120585b1284f3f3c8828e51f8cfde2492eb12@115.29.205.107:7890"
+```
+
