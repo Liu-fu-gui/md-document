@@ -405,6 +405,7 @@ chmod +x elastic-certificates.p12
 ```
 
 ## ik插件安装--地图
+
 进入到每个es01 es02 es03 执行
 ```
 bin/elasticsearch-plugin install https://get.infini.cloud/elasticsearch/analysis-ik/7.10.2
@@ -533,3 +534,145 @@ services:
       - LOGSTASH_JAVA_OPTS=-Xms1g -Xmx1g
     restart: unless-stopped
 ```
+
+
+
+
+
+
+
+
+
+
+
+# 总结
+
+## es3.yaml
+
+```
+version: '3.8'
+
+services:
+  elasticsearch1:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2          
+    container_name: es01
+    volumes:
+      - /home/elasticsearch/node1/data:/usr/share/elasticsearch/data
+      - /home/elasticsearch/node1/logs:/usr/share/elasticsearch/logs
+      - /home/elasticsearch/node1/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - /home/elasticsearch/node1/config/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
+    environment:
+      - bootstrap.memory_lock=true
+      - TZ=Asia/Shanghai
+      - LANG=en_US.UTF-8
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+      - TAKE_FILE_OWNERSHIP=true
+      - ELASTIC_PASSWORD=ptMF0bT5jMErJnmi5HWy
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - elastic
+
+  elasticsearch2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
+    container_name: es02
+    volumes:
+      - /home/elasticsearch/node2/data:/usr/share/elasticsearch/data
+      - /home/elasticsearch/node2/logs:/usr/share/elasticsearch/logs
+      - /home/elasticsearch/node2/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - /home/elasticsearch/node2/config/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
+    environment:
+      - bootstrap.memory_lock=true
+      - TZ=Asia/Shanghai
+      - LANG=en_US.UTF-8
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+      - TAKE_FILE_OWNERSHIP=true
+      - ELASTIC_PASSWORD=ptMF0bT5jMErJnmi5HWy
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      - elastic
+
+  elasticsearch3:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
+    container_name: es03
+    volumes:
+      - /home/elasticsearch/node3/data:/usr/share/elasticsearch/data
+      - /home/elasticsearch/node3/logs:/usr/share/elasticsearch/logs
+      - /home/elasticsearch/node3/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - /home/elasticsearch/node3/config/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
+    environment:
+      - bootstrap.memory_lock=true
+      - TZ=Asia/Shanghai
+      - LANG=en_US.UTF-8
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+      - TAKE_FILE_OWNERSHIP=true
+      - ELASTIC_PASSWORD=ptMF0bT5jMErJnmi5HWy
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      - elastic
+
+networks:
+  elastic:
+    driver: bridge
+
+```
+
+## logstash-kibana.yaml
+
+```
+version: '3.8'
+
+services:
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.10.2
+    container_name: logstash
+    mem_limit: 2g
+    ports:
+      - "4560:4560"
+      - "4561:4561"
+      - "4562:4562"
+      - "4563:4563"
+    volumes:
+      - /home/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+      - /home/logstash/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+    environment:
+      - LOGSTASH_JAVA_OPTS=-Xms1g -Xmx1g
+      - TZ=Asia/Shanghai
+    restart: unless-stopped
+    networks:
+      - elk_elastic  # 修改此处以匹配实际网络名称
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.10.2
+    container_name: kibana
+    mem_limit: 1g
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://es01:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=ptMF0bT5jMErJnmi5HWy
+      - TZ=Asia/Shanghai
+    volumes:
+      - /home/kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+    restart: unless-stopped
+    networks:
+      - elk_elastic  # 修改此处以匹配实际网络名称
+
+networks:
+  elk_elastic:  # 修改此处以匹配实际网络名称
+    external: true
+
+```
+
